@@ -10,11 +10,12 @@ import matplotlib.pyplot as plt
 from nltk.corpus import stopwords
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.stem import WordNetLemmatizer
-from wordcloud import WordCloud,STOPWORDS
-from flask import Flask,render_template,request
+from wordcloud import WordCloud, STOPWORDS
+from flask import Flask, render_template, request
 import time
 
-from selenium.webdriver import Chrome
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
@@ -32,18 +33,24 @@ sia = SentimentIntensityAnalyzer()
 stop_words = stopwords.words('english')
 
 def returnytcomments(url):
-    data=[]
+    data = []
+    service = Service(r'C:\Users\aryan\chromedriver-win64\chromedriver-win64\chromedriver.exe')
+    options = webdriver.ChromeOptions()
+    
+    try:
+        with webdriver.Chrome(service=service, options=options) as driver:
+            wait = WebDriverWait(driver, 15)
+            driver.get(url)
 
-    with Chrome(executable_path=r'C:\Program Files\chromedriver.exe') as driver:
-        wait = WebDriverWait(driver,15)
-        driver.get(url)
+            for item in range(5): 
+                wait.until(EC.visibility_of_element_located((By.TAG_NAME, "body"))).send_keys(Keys.END)
+                time.sleep(2)
 
-        for item in range(5): 
-            wait.until(EC.visibility_of_element_located((By.TAG_NAME, "body"))).send_keys(Keys.END)
-            time.sleep(2)
-
-        for comment in wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#content"))):
-            data.append(comment.text)
+            for comment in wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, "#content"))):
+                data.append(comment.text)
+    except Exception as e:
+        print(f"Error scraping comments: {str(e)}")
+        return []
 
     return data
 
@@ -53,109 +60,110 @@ def clean(org_comments):
         x = x.split()
         x = [i.lower().strip() for i in x]
         x = [i for i in x if i not in stop_words]
-        x = [i for i in x if len(i)>2]
+        x = [i for i in x if len(i) > 2]
         x = [wnl.lemmatize(i) for i in x]
         y.append(' '.join(x))
     return y
 
 def create_wordcloud(clean_reviews):
-    # building our wordcloud and saving it
-    for_wc = ' '.join(clean_reviews)
-    wcstops = set(STOPWORDS)
-    wc = WordCloud(width=1400,height=800,stopwords=wcstops,background_color='white').generate(for_wc)
-    plt.figure(figsize=(20,10), facecolor='k', edgecolor='k')
-    plt.imshow(wc, interpolation='bicubic') 
-    plt.axis('off')
-    plt.tight_layout()
-    CleanCache(directory='static/images')
-    plt.savefig('static/images/woc.png')
-    plt.close()
-    
+    try:
+        for_wc = ' '.join(clean_reviews)
+        wcstops = set(STOPWORDS)
+        wc = WordCloud(width=1400, height=800, stopwords=wcstops, background_color='white').generate(for_wc)
+        plt.figure(figsize=(20,10), facecolor='k', edgecolor='k')
+        plt.imshow(wc, interpolation='bicubic') 
+        plt.axis('off')
+        plt.tight_layout()
+        
+        # Ensure directory exists
+        os.makedirs('static/images', exist_ok=True)
+        
+        CleanCache(directory='static/images')
+        plt.savefig('static/images/woc.png')
+        plt.close()
+    except Exception as e:
+        print(f"Error creating wordcloud: {str(e)}")
+
 def returnsentiment(x):
-    score =  sia.polarity_scores(x)['compound']
+    score = sia.polarity_scores(x)['compound']
     
-    if score>0:
+    if score > 0:
         sent = 'Positive'
-    elif score==0:
+    elif score < 0:
         sent = 'Negative'
     else:
         sent = 'Neutral'
-    return score,sent
-
+    return score, sent
 
 @app.route('/')
 def home():
     return render_template('home.html')
 
-@app.route('/results',methods=['GET'])
+@app.route('/results', methods=['GET'])
 def result():    
     url = request.args.get('url')
     
+    if not url:
+        return "URL parameter is required", 400
+    
     org_comments = returnytcomments(url)
+    if not org_comments:
+        return "Could not fetch comments", 400
+        
     temp = []
-
     for i in org_comments:
-         if 5<len(i)<=500:
+        if 5 < len(i) <= 500:
             temp.append(i)
     
     org_comments = temp
-
     clean_comments = clean(org_comments)
-
     create_wordcloud(clean_comments)
     
-    np,nn,nne = 0,0,0
-
+    np, nn, nne = 0, 0, 0
     predictions = []
     scores = []
 
     for i in clean_comments:
-        score,sent = returnsentiment(i)
+        score, sent = returnsentiment(i)
         scores.append(score)
         if sent == 'Positive':
             predictions.append('POSITIVE')
-            np+=1
+            np += 1
         elif sent == 'Negative':
             predictions.append('NEGATIVE')
-            nn+=1
+            nn += 1
         else:
             predictions.append('NEUTRAL')
-            nne+=1
+            nne += 1
 
     dic = []
+    for i, cc in enumerate(clean_comments):
+        dic.append({
+            'sent': predictions[i],
+            'clean_comment': cc,
+            'org_comment': org_comments[i],
+            'score': scores[i]  # Fixed: use individual score instead of entire list
+        })
 
-    for i,cc in enumerate(clean_comments):
-        x={}
-        x['sent'] = predictions[i]
-        x['clean_comment'] = cc
-        x['org_comment'] = org_comments[i]
-        x['score'] = scores
-        dic.append(x)
+    return render_template('result.html', n=len(clean_comments), nn=nn, np=np, nne=nne, dic=dic)
 
-    return render_template('result.html',n=len(clean_comments),nn=nn,np=np,nne=nne,dic=dic)
-    
-    
 @app.route('/wc')
 def wc():
     return render_template('wc.html')
 
-
 class CleanCache:
-	'''
-	this class is responsible to clear any residual csv and image files
-	present due to the past searches made.
-	'''
-	def __init__(self, directory=None):
-		self.clean_path = directory
-		# only proceed if directory is not empty
-		if os.listdir(self.clean_path) != list():
-			# iterate over the files and remove each file
-			files = os.listdir(self.clean_path)
-			for fileName in files:
-				print(fileName)
-				os.remove(os.path.join(self.clean_path,fileName))
-		print("cleaned!")
-
+    def __init__(self, directory=None):
+        self.clean_path = directory
+        if directory and os.path.exists(directory):
+            files = os.listdir(self.clean_path)
+            for fileName in files:
+                try:
+                    os.remove(os.path.join(self.clean_path, fileName))
+                except Exception as e:
+                    print(f"Error removing file {fileName}: {str(e)}")
+        print("cleaned!")
 
 if __name__ == '__main__':
+    # Ensure static/images directory exists
+    os.makedirs('static/images', exist_ok=True)
     app.run(debug=True)

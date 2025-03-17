@@ -1,5 +1,12 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <title>YouTube Comments Sentiment Analysis</title>
+</head>
 
 <style>
     * {
@@ -9,16 +16,192 @@
     }
 
     body {
-        background-image: url('static/back.png');
-        background-size: cover;
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
         font-family: sans-serif;
         background-attachment: fixed;
-        margin-top: 40px;
-        height: 100vh;
         padding: 0;
         margin: 0;
+        color: #ffffff;
     }
 
+    .hero-section {
+        background-color: rgba(26, 26, 46, 0.9);
+        padding: 40px 0;
+        text-align: center;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 20px;
+    }
+
+    .stats-container {
+        display: flex;
+        justify-content: center;
+        gap: 30px;
+        margin: 30px 0;
+        flex-wrap: wrap;
+    }
+
+    .stat-box {
+        background: linear-gradient(145deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+        padding: 20px;
+        border-radius: 15px;
+        text-align: center;
+        min-width: 200px;
+        transition: transform 0.3s ease;
+        border: 1px solid rgba(255, 107, 107, 0.2);
+    }
+
+    .stat-box:hover {
+        transform: translateY(-5px);
+        background: linear-gradient(145deg, rgba(255, 107, 107, 0.15), rgba(255, 107, 107, 0.1));
+    }
+
+    .stat-number {
+        font-size: 28px;
+        color: #ff6b6b;
+        font-weight: bold;
+    }
+
+    .features-section {
+        background-color: rgba(26, 26, 46, 0.7);
+        padding: 50px 0;
+        margin: 30px 0;
+    }
+
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .feature-card {
+        background: linear-gradient(145deg, rgba(255, 107, 107, 0.05), rgba(255, 107, 107, 0.02));
+        padding: 25px;
+        border-radius: 15px;
+        text-align: center;
+        transition: transform 0.3s ease;
+        border: 1px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .feature-card p {
+        color: #ffffff;
+        font-weight: 400;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-5px);
+        background: linear-gradient(145deg, rgba(255, 107, 107, 0.1), rgba(255, 107, 107, 0.05));
+    }
+
+    .feature-icon {
+        font-size: 40px;
+        color: #ff6b6b;
+        margin-bottom: 15px;
+    }
+
+    .url-input-section {
+        background-color: rgba(26, 26, 46, 0.9);
+        padding: 50px 0;
+        text-align: center;
+    }
+
+    .url-input {
+        width: 60%;
+        margin: 0 auto;
+        max-width: 800px;
+    }
+
+    .step-card p {
+        color: #ffffff;
+        font-weight: 400;
+    }
+
+    .how-it-works {
+        padding: 40px 0;
+        background-color: rgba(26, 26, 46, 0.7);
+        margin: 30px 0;
+    }
+
+    .step-container {
+        display: flex;
+        justify-content: space-around;
+        flex-wrap: wrap;
+        gap: 30px;
+        margin-top: 30px;
+    }
+
+    .step-card {
+        background: linear-gradient(145deg, rgba(255, 107, 107, 0.05), rgba(255, 107, 107, 0.02));
+        padding: 25px;
+        border-radius: 15px;
+        width: 250px;
+        text-align: center;
+        border: 1px solid rgba(255, 107, 107, 0.1);
+    }
+
+    .step-number {
+        background: linear-gradient(145deg, #ff6b6b, #ff8585);
+        color: white;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 15px;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .lead {
+        color: #ffffff;
+        font-weight: 400;
+    }
+
+    h1, h2, h4 {
+        color: #ffffff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .form-control {
+        background: rgba(216, 210, 210, 0.05);
+        border: 1px solid rgba(255, 107, 107, 0.2);
+        color: #ffffff;
+    }
+
+    .form-control::placeholder {
+        color: rgba(255, 255, 255, 0.7);
+    }
+
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #ff6b6b;
+        box-shadow: 0 0 0 0.2rem rgba(255, 107, 107, 0.25);
+        color: #ffffff;
+    }
+
+    .analyze-btn {
+        background: linear-gradient(145deg, #ff6b6b, #ff8585);
+        color: white;
+        border: none;
+        padding: 15px 40px;
+        font-size: 20px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+    }
+
+    .analyze-btn:hover {
+        background: linear-gradient(145deg, #ff8585, #ff6b6b);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+    }
 
     .loader {
         display: none;
@@ -29,93 +212,131 @@
     }
 
     .loading {
-        border: 5px solid #ccc;
+        border: 5px solid #1a1a2e;
         width: 90px;
         height: 90px;
         border-radius: 50%;
-        border-top-color: #61f3c5;
-        border-left-color: #61f3c5;
+        border-top-color: #ff6b6b;
+        border-left-color: #ff6b6b;
         animation: spin 1s infinite ease-in;
     }
 
     @keyframes spin {
-        0% {
-            transform: rotate(0deg);
-        }
-
-        100% {
-            transform: rotate(360deg);
-        }
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
     }
 </style>
 
-
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/css/bootstrap.min.css"
-        integrity="sha384-TX8t27EcRE3e/ihU7zmQxVncDAy5uIKz4rEkgIXeMed4M0jlfIDPvg6uqKI2xXr2" crossorigin="anonymous">
-
-    <title>Reviews Sentiments...</title>
-</head>
-
-<script type="text/javascript">
-    function spinner() {
-        document.getElementsByClassName("loader")[0].style.display = "block";
-    }
-</script>
-
-
 <body>
-    <div>
-        <h1 style="text-align: center;padding-top: 15px;padding-bottom: 15px;color:whitesmoke;font-size:44px;">Youtube
-            Video Comments Sentiment Analyzer</h1>
-    </div>
-
-    <div>
-        <form action="results">
-            <div class="form-group">
-                <h2 style="text-align: center;padding-top: 77px;padding-bottom: 15px;color:bisque;font-size: 45px;">
-                    Enter the Youtube Video URL...
-                </h2>
-                <div style="margin: 0 auto;width: 60%;">
-
-                    <input type="url" class="form-control" name='url' id="url" style='border-radius:1.25rem;margin-top: 10px;
-                        margin-bottom: 30px;height: 70px;' placeholder='Please enter a valid url'>
-
-                    <div style="text-align: center" ;>
-                        <button style="width: 280px;font-size: 25px;height: 62px;border-radius: 2.25rem;" type="submit"
-                            class="btn btn-primary" onclick="spinner()">Analyze Comments</button>
-                        <div class="loader">
-                            <div class="loading"></div>
-                        </div>
-                    </div>
-
+    <!-- Hero Section -->
+    <div class="hero-section">
+        <div class="container">
+            <h1 style="font-size: 44px; margin-bottom: 20px;">YouTube Video Comments Sentiment Analyzer</h1>
+            <p class="lead">Unlock the power of viewer sentiment analysis with our advanced AI-powered tool</p>
+            
+            <div class="stats-container">
+                <div class="stat-box">
+                    <div class="stat-number">2.7B+</div>
+                    <div>Monthly Active Users</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">500+</div>
+                    <div>Hours Uploaded/Minute</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">1B+</div>
+                    <div>Hours Watched Daily</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">5M+</div>
+                    <div>Comments Daily</div>
                 </div>
             </div>
-
-        </form>
-
+        </div>
     </div>
 
-    <footer class='text-light bg-dark position-absolute fixed-bottom '>
-        <p class='text-center py-1 my-0'>
-            Made with ❤ by Abhishek Sharma
-        </p>
-    </footer>
+    <!-- Features Section -->
+    <div class="features-section">
+        <div class="container">
+            <h2 class="text-center mb-4">Why Use Our Sentiment Analyzer?</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-pie"></i>
+                    </div>
+                    <h4>Sentiment Analysis</h4>
+                    <p>Advanced AI algorithms categorize comments as positive, negative, or neutral</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-cloud"></i>
+                    </div>
+                    <h4>Word Cloud</h4>
+                    <p>Visualize most common words and phrases in comments</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-tachometer-alt"></i>
+                    </div>
+                    <h4>Real-time Analysis</h4>
+                    <p>Get instant insights from your video comments</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h4>Detailed Metrics</h4>
+                    <p>Get comprehensive statistics and sentiment scores</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Optional JavaScript; choose one of the two! -->
+    <!-- How It Works Section -->
+    <div class="how-it-works">
+        <div class="container">
+            <h2 class="text-center mb-4">How It Works</h2>
+            <div class="step-container">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h4>Paste URL</h4>
+                    <p>Copy and paste your YouTube video URL in the input field</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h4>Analysis</h4>
+                    <p>Our AI analyzes the comments using natural language processing</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h4>Results</h4>
+                    <p>View detailed sentiment analysis and visualizations</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <!-- Option 1: jQuery and Bootstrap Bundle (includes Popper) -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"
-        integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx"
-        crossorigin="anonymous"></script>
+    <!-- URL Input Section -->
+    <div class="url-input-section">
+        <div class="container">
+            <h2 class="mb-4">Ready to Analyze Your Video?</h2>
+            <form action="results">
+                <div class="url-input">
+                    <input type="url" class="form-control mb-4" name='url' id="url" 
+                           style='border-radius: 1.25rem; height: 70px;' 
+                           placeholder='Enter your YouTube video URL'>
+                    <button type="submit" class="analyze-btn" onclick="spinner()">
+                        Analyze Comments <i class="fas fa-arrow-right ml-2"></i>
+                    </button>
+                    <div class="loader">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>
